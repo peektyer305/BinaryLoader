@@ -38,6 +38,8 @@ public:
 
     Section() : binary(NULL), type(SEC_TYPE_NONE), vma(0), size(0), bytes(NULL) {}
 
+    bool contains(uint64_t addr) { return (addr >= vma) && (addr - vma < size); }
+
     Binary *binary; // このセクションオブジェクトが所属するバイナリ
     string name;
     SectionType type;
