@@ -49,6 +49,42 @@ static bfd *open_bfd(string &fname)
     return bfd_handler;
 }
 
+static int load_binary_bfd(string &fname, Binary *bin, Binary::BinaryType bintype)
+{
+    int ret;
+    bfd *bfd_handler;
+    const bfd_arch_info_type *arch_info;
+
+    bfd_handler = NULL;
+
+    bfd_handler = open_bfd(fname);
+    if (!bfd_handler)
+    {
+        goto fail;
+    }
+
+    bin->filename = string(fname); // Cの文字列をC++のstringオブジェクトにコピー
+    bin->entry = bfd_get_start_address(bfd_handler);
+
+    bin->type_str = string(bfd_handler->xvec->name);
+    switch (bfd_handler->xvec->flavour)
+    {
+
+    case bfd_target_elf_flavour:
+        bin->type = Binary::BIN_TYPE_ELF;
+        break;
+
+    case bfd_target_coff_flavour:
+        bin->type = Binary::BIN_TYPE_PE;
+        break;
+
+    case bfd_target_unknown_flavour:
+    default:
+        fprintf(stderr, "unsupported binary format '%s'¥n", bfd_handler->xvec->name);
+        goto fail;
+    }
+}
+
 int load_binary(string &fname, Binary *bin, Binary::BinaryType bintype)
 {
     return load_binary_bfd(fname, bin, bintype);
