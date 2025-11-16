@@ -48,4 +48,42 @@ public:
     uint8_t *bytes; // セクションデータのバイト列
 };
 
+class Binary
+{
+public:
+    enum BinaryType
+    {
+        BIN_TYPE_AUTO = 0,
+        BIN_TYPE_ELF = 1,
+        BIN_TYPE_PE = 2,
+    };
+    enum BinaryArch
+    {
+        ARCH_NONE = 0,
+        ARCH_X86 = 1,
+    };
+
+    Binary() : type(BIN_TYPE_AUTO), arch(ARCH_NONE), bits(0), entry(0) {}
+
+    Section *get_text_section()
+    {
+        for (Section &sec : sections)
+        {
+            if (sec.name == ".text")
+                return &sec;
+        }
+        return NULL;
+    };
+
+    string filename;
+    BinaryType type;
+    string type_str;
+    BinaryArch arch;
+    string arch_str;
+    unsigned bits;  // 32 or 64
+    uint64_t entry; // エントリポイントアドレス
+    vector<Section> sections;
+    vector<Symbol> symbols;
+}
+
 #endif // LOADER_H
