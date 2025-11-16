@@ -88,4 +88,5 @@ public:
 
 int load_binary(string &filename, Binary *bin, Binary::BinaryType type);
 void unload_binary(Binary *bin);
+
 #endif // LOADER_H

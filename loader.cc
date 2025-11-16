@@ -11,4 +11,40 @@
 
 #include "loader.h"
 
-static bfd *
+using namespace std;
+
+static bfd *open_bfd(string &fname)
+{
+    static int bfd_inited = 0;
+
+    bfd *bfd_h;
+
+    if (!bfd_inited)
+    {
+        bfd_init();
+        bfd_inited = 1;
+    }
+
+    bfd_h = bfd_openr(fname.c_str(), NULL);
+    if (!bfd_h)
+    {
+        fprintf(stderr, "failed to open binary '%s' (%s)¥n", fname.c_str(), bfd_errmsg(bfd_get_error()));
+        return NULL;
+    }
+
+    if (!bfd_check_format(bfd_h, bfd_object))
+    {
+        fprintf(stderr, "file '%s' does not look like an executable (%s)¥n", fname.c_str(), bfd_errmsg(bfd_get_error()));
+        bfd_close(bfd_h);
+        return NULL;
+    }
+
+    bfd_set_error(bfd_error_no_error);
+
+    if (bfd_get_flavour(bfd_h) == bfd_target_unknown_flavour)
+    {
+        fprintf(stderr, "unknown binary format: '%s' (%s)¥n", fname.c_str(), bfd_errmsg(bfd_get_error()));
+        return NULL;
+    }
+    return bfd_h;
+}
