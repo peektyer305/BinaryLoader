@@ -84,6 +84,6 @@ public:
     uint64_t entry; // エントリポイントアドレス
     vector<Section> sections;
     vector<Symbol> symbols;
-}
+};
 
 #endif // LOADER_H
