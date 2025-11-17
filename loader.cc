@@ -152,7 +152,65 @@ fail:
 cleanup:
     if (bfd_dynsym)
         free(bfd_dynsym);
+
     return ret;
+}
+
+static int load_sections_bfd(bfd *bfd_handler, Binary *bin)
+{
+    int bfd_flags;
+    uint64_t vma, size;
+    const char *secname;
+    asection *bfd_sec;
+    Section *sec;
+    Section::SectionType sectype;
+
+    for (bfd_sec = bfd_handler->sections; bfd_sec != NULL; bfd_sec = bfd_sec->next)
+    {
+        bfd_flags = bfd_get_section_flags(bfd_handler, bfd_sec);
+
+        secntype = Section::SEC_TYPE_NONE;
+        if (bfd_flags & SEC_CODE)
+        {
+            sectype = Section::SEC_TYPE_CODE;
+        }
+        else if (bfd_flags & SEC_DATA)
+        {
+            sectype = Section::SEC_TYPE_DATA;
+        }
+        else
+        {
+            continue; // コードセクションでもデータセクションでもない場合はスキップ
+        }
+
+        vma = bfd_section_vma(bfd_handler, bfd_sec);
+        size = bfd_section_size(bfd_handler, bfd_sec);
+        secname = bfd_section_name(bfd_handler, bfd_sec);
+        if (!secname)
+            secname = "<unnamed>";
+
+        bin->sections.push_back(Section()); // 一時オブジェクトを追加
+        sec = &bin->sections.back();
+
+        sec->binary = bin;
+        sec->name = string(secname);
+        sec->type = sectype;
+        sec->vma = vma;
+        sec->size = size;
+        sec->bytes = (uint8_t *)malloc(size);
+        if (!sec->bytes)
+        {
+            fprintf(stderr, "out of memory\n");
+            return -1;
+        }
+
+        if (!bfd_get_section_contents(bfd_handler, bfd_sec, sec->bytes, 0, size))
+        {
+            fprintf(stderr, "failed to read section '%s' contents: %s\n", secname, bfd_errmsg(bfd_get_error()));
+            return -1;
+        }
+    }
+    return 0;
 }
 
 static int load_binary_bfd(string &fname, Binary *bin, Binary::BinaryType bintype)
