@@ -83,7 +83,44 @@ static int load_binary_bfd(string &fname, Binary *bin, Binary::BinaryType bintyp
         fprintf(stderr, "unsupported binary format '%s'¥n", bfd_handler->xvec->name);
         goto fail;
     }
+    arch_info = bfd_get_arch_info(bfd_handler);
+    bin->arch_str = string(arch_info->printable_name);
+    switch (bfd_info->mach)
+    {
+    case bfd_mach_i386_i386:
+        bin->arch = Binary::ARCH_X86;
+        bin->bits = 32;
+        break;
+    case bfd_mach_x86_64:
+        bin->arch = Binary::ARCH_X86;
+        bin->bits = 64;
+        break;
+    default:
+        fprintf(stderr, "unsupported architecture '%s'¥n", arch_info->printable_name);
+        goto fail;
+    }
+
+    load_symbols_bfd(bfd_handler, bin);
+    load_dynsym_bfd(bfd_handler, bin);
+
+    if (load_sections_bfd(bfd_handler, bin) < 0)
+        goto fail;
+
+    ret = 0;
+    goto cleanup;
+
+fail:
+    ret = -1;
+
+cleanup:
+    if (bfd_handler)
+        bfd_close(bfd_handler);
+
+    return ret;
 }
+
+void load_symbols_bfd(bfd *bfd_handler, Binary *bin);
+void load_dynsym_bfd(bfd *bfd_handler, Binary *bin);
 
 int load_binary(string &fname, Binary *bin, Binary::BinaryType bintype)
 {
