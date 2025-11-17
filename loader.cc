@@ -217,7 +217,7 @@ static int load_binary_bfd(string &fname, Binary *bin, Binary::BinaryType bintyp
 {
     int ret;
     bfd *bfd_handler;
-    const bfd_arch_info_type *arch_info;
+    const bfd_arch_info_type *bfd_info;
 
     bfd_handler = NULL;
 
@@ -260,7 +260,7 @@ static int load_binary_bfd(string &fname, Binary *bin, Binary::BinaryType bintyp
         bin->bits = 64;
         break;
     default:
-        fprintf(stderr, "unsupported architecture '%s'¥n", arch_info->printable_name);
+        fprintf(stderr, "unsupported architecture '%s'¥n", bfd_info->printable_name);
         goto fail;
     }
 
