@@ -67,13 +67,16 @@ public:
 
     Section *get_text_section()
     {
-        for (Section &sec : sections)
+        for (int i = 0; i < sections.size(); i++)
         {
-            if (sec.name == ".text")
-                return &sec;
-        }
-        return NULL;
-    };
+            Section &sec = sections[i];
+            {
+                if (sec.name == ".text")
+                    return &sec;
+            }
+            return NULL;
+        };
+    }
 
     string filename;
     BinaryType type;
