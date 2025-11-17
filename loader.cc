@@ -105,40 +105,55 @@ cleanup:
     return ret;
 }
 
-// static int load_symbols_bfd(bfd *bfd_handler, Binary *bin)
-// {
-//     int ret;
-//     long n, nsyms, i;
-//     asymbol **bfd_dynsym;
-//     Symbol *sym;
+static int load_dynsym_bfd(bfd *bfd_handler, Binary *bin)
+{
+    int ret;
+    long n, nsyms, i;
+    asymbol **bfd_dynsym;
+    Symbol *sym;
+    bfd_dynsym = NULL;
 
-//     bfd_dynsym = NULL;
-
-//     n = bfd_get_dynamic_symtab_upper_bound(bfd_handler);
-//     if (n < 0)
-//     {
-//         fprintf(stderr, "failed to read dynamic symbol table: %s\n", bfd_errmsg(bfd_get_error()));
-//         goto fail;
-//     }
-//     else if (n)
-//     {
-//         bfd_dynsym = (asymbol **)malloc(n);
-//         if (!bfd_dynsym)
-//         {
-//             fprintf(stderr, "out of memory\n");
-//             goto fail;
-//         }
-//         nsyms = bfd_canonicalize_dynamic_symtab(bfd_handler, bfd_dynsym);
-//         if (nsyms < 0)
-//         {
-//             fprintf(stderr, "failed to read dynamic symbol table: %s\n", bfd_errmsg(bfd_get_error()));
-//             goto fail;
-//         }
-//         for(i = 0; i < nsyms; i++) {
-//             if(b)
-//         }
-//     }
-// }
+    n = bfd_get_dynamic_symtab_upper_bound(bfd_handler);
+    if (n < 0)
+    {
+        fprintf(stderr, "failed to read dynamic symbol table: %s\n", bfd_errmsg(bfd_get_error()));
+        goto fail;
+    }
+    else if (n)
+    {
+        bfd_dynsym = (asymbol **)malloc(n);
+        if (!bfd_dynsym)
+        {
+            fprintf(stderr, "out of memory\n");
+            goto fail;
+        }
+        nsyms = bfd_canonicalize_dynamic_symtab(bfd_handler, bfd_dynsym);
+        if (nsyms < 0)
+        {
+            fprintf(stderr, "failed to read dynamic symbol table: %s\n", bfd_errmsg(bfd_get_error()));
+            goto fail;
+        }
+        for (i = 0; i < nsyms; i++)
+        {
+            if (bfd_dynsym[i]->flags & BSF_FUNCTION)
+            {
+                bin->symbols.push_back(Symbol()); // 一時オブジェクトを追加
+                sym = &bin->symbols.back();       // 追加したオブジェクトへのポインタを取得
+                sym->type = Symbol::SYM_TYPE_FUNC;
+                sym->name = string(bfd_dynsym[i]->name);
+                sym->addr = bfd_asymbol_value(bfd_dynsym[i]);
+            }
+        }
+    }
+    ret = 0;
+    goto cleanup;
+fail:
+    ret = -1;
+cleanup:
+    if (bfd_dynsym)
+        free(bfd_dynsym);
+    return ret;
+}
 
 static int load_binary_bfd(string &fname, Binary *bin, Binary::BinaryType bintype)
 {
