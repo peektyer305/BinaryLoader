@@ -248,7 +248,7 @@ static int load_binary_bfd(string &fname, Binary *bin, Binary::BinaryType bintyp
         goto fail;
     }
     bfd_info = bfd_get_arch_info(bfd_handler);
-    bin->arch_str = string(arch_info->printable_name);
+    bin->arch_str = string(bfd_info->printable_name);
     switch (bfd_info->mach)
     {
     case bfd_mach_i386_i386:
