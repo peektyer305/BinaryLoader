@@ -169,7 +169,7 @@ static int load_sections_bfd(bfd *bfd_handler, Binary *bin)
     {
         bfd_flags = bfd_get_section_flags(bfd_handler, bfd_sec);
 
-        secntype = Section::SEC_TYPE_NONE;
+        sectype = Section::SEC_TYPE_NONE;
         if (bfd_flags & SEC_CODE)
         {
             sectype = Section::SEC_TYPE_CODE;
@@ -247,7 +247,7 @@ static int load_binary_bfd(string &fname, Binary *bin, Binary::BinaryType bintyp
         fprintf(stderr, "unsupported binary format '%s'¥n", bfd_handler->xvec->name);
         goto fail;
     }
-    arch_info = bfd_get_arch_info(bfd_handler);
+    bfd_info = bfd_get_arch_info(bfd_handler);
     bin->arch_str = string(arch_info->printable_name);
     switch (bfd_info->mach)
     {
